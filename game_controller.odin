@@ -39,13 +39,13 @@ update_boids :: proc(quad_tree : ^qt.Quadtree)
             quad_tree.points[i].position.x = 0
         }
         if quad_tree.points[i].position.x < 0 {
-            quad_tree.points[i].position.x = quad_tree.points[i].max_width
+            quad_tree.points[i].position.x = quad_tree.points[i].max_width -1
         }
         if quad_tree.points[i].position.y > quad_tree.points[i].max_height {
             quad_tree.points[i].position.y = 0
         }
         if quad_tree.points[i].position.y < 0 {
-            quad_tree.points[i].position.y = quad_tree.points[i].max_height
+            quad_tree.points[i].position.y = quad_tree.points[i].max_height -1
         }
     }
 }
