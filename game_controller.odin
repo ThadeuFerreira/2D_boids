@@ -13,16 +13,18 @@ insert_boid_in_quadtree :: proc(quad_tree : ^qt.Quadtree, boid : ^boid.Boid)
 
 Update :: proc(quad_tree : ^qt.Quadtree)
 {
-    update_boids(quad_tree)
+    delta_time := rl.GetFrameTime()
+    update_boids(quad_tree, delta_time)
 }
 
-update_boids :: proc(quad_tree : ^qt.Quadtree)
+update_boids :: proc(quad_tree : ^qt.Quadtree, delta_time : f32)
 {
+    speed : f32 = 100
     if quad_tree.divided {
-        update_boids(quad_tree.northWest)
-        update_boids(quad_tree.northEast)
-        update_boids(quad_tree.southWest)
-        update_boids(quad_tree.southEast)
+        update_boids(quad_tree.northWest, delta_time)
+        update_boids(quad_tree.northEast, delta_time)
+        update_boids(quad_tree.southWest, delta_time)
+        update_boids(quad_tree.southEast, delta_time)
     } 
     for i in 0..< len(quad_tree.points) {
         close_boids := &[dynamic]^boid.Boid{}
@@ -33,7 +35,7 @@ update_boids :: proc(quad_tree : ^qt.Quadtree)
         
         quad_tree.points[i].acceleration = separation_force + alignment_force + cohesion_force
         quad_tree.points[i].velocity = quad_tree.points[i].velocity + quad_tree.points[i].acceleration
-        quad_tree.points[i].position = quad_tree.points[i].position + quad_tree.points[i].velocity
+        quad_tree.points[i].position = quad_tree.points[i].position + quad_tree.points[i].velocity * delta_time*speed
 
         if quad_tree.points[i].position.x > quad_tree.points[i].max_width {
             quad_tree.points[i].position.x = 0

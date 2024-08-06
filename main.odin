@@ -27,7 +27,7 @@ main :: proc()
     //--------------------------------------------------------------------------------------
 
     rl.SetConfigFlags(rl.ConfigFlags{rl.ConfigFlag.WINDOW_TRANSPARENT});
-    update_time : f32 = 0
+
     rl.InitWindow(screen_width, screen_height, "Boids - basic window");
     rl.HideCursor()
         
@@ -56,12 +56,12 @@ main :: proc()
 
         st_mouse_pos :=  fmt.tprintf( "%v, %v", mouse_pos.x ,mouse_pos.y)
         rl.DrawText(strings.clone_to_cstring(st_mouse_pos), i32(mouse_pos.x), i32(mouse_pos.y), 20, rl.WHITE)
-        update_time += rl.GetFrameTime()
+
         average_speed : f32= 0
-        if update_time > 0.01{
-            Update(quad_tree)
-            update_time = 0
-        }
+
+        Update(quad_tree)
+
+        
         // for i in 0..<len(boids) {
         //     velocity := boids[i].velocity
         //     speed := rl.Vector2Length(velocity)  
