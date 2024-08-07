@@ -32,7 +32,7 @@ Make_boid :: proc(position : rl.Vector2, max_force : f32, max_speed : f32,max_wi
     return boid
 }
 
-Update :: proc(boids : [dynamic]^Boid, b : ^Boid)
+Update :: proc(boids : ^[dynamic]^Boid, b : ^Boid)
 {
  
     b.acceleration = get_forces(boids, b)
@@ -60,9 +60,8 @@ Update :: proc(boids : [dynamic]^Boid, b : ^Boid)
     }
 }
 
-get_forces :: proc(boids : [dynamic]^Boid, b : ^Boid) -> rl.Vector2
+get_forces :: proc(boids : ^[dynamic]^Boid, b : ^Boid) -> rl.Vector2
 {
-
     alignment := get_aligment_force(boids,b)
     cohesion := get_cohesion_force(boids,b)
     separation := get_separation_force(boids,b)
@@ -74,7 +73,7 @@ get_forces :: proc(boids : [dynamic]^Boid, b : ^Boid) -> rl.Vector2
     
 }
 
-get_aligment_force :: proc(boids : [dynamic]^Boid, b : ^Boid) -> rl.Vector2
+get_aligment_force :: proc(boids : ^[dynamic]^Boid, b : ^Boid) -> rl.Vector2
 {
     perception_radius : f32 = 200
     steering_force := rl.Vector2{0, 0}
@@ -99,7 +98,7 @@ get_aligment_force :: proc(boids : [dynamic]^Boid, b : ^Boid) -> rl.Vector2
     return steering_force
 }
 
-get_cohesion_force :: proc(boids : [dynamic]^Boid, b : ^Boid) -> rl.Vector2
+get_cohesion_force :: proc(boids : ^[dynamic]^Boid, b : ^Boid) -> rl.Vector2
 {
     perception_radius : f32 = 200
     steering_force := rl.Vector2{0, 0}
@@ -125,7 +124,7 @@ get_cohesion_force :: proc(boids : [dynamic]^Boid, b : ^Boid) -> rl.Vector2
     return steering_force
 }
 
-get_separation_force :: proc(boids : [dynamic]^Boid, b : ^Boid) -> rl.Vector2
+get_separation_force :: proc(boids : ^[dynamic]^Boid, b : ^Boid) -> rl.Vector2
 {
     perception_radius : f32 = 50
     steering_force := rl.Vector2{0, 0}

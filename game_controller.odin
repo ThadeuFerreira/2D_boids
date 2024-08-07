@@ -20,18 +20,19 @@ Update :: proc(quad_tree : ^qt.Quadtree)
 update_boids :: proc(quad_tree : ^qt.Quadtree, delta_time : f32)
 {
     speed : f32 = 100
-    if quad_tree.divided {
+    if quad_tree.divided { 
         update_boids(quad_tree.northWest, delta_time)
         update_boids(quad_tree.northEast, delta_time)
         update_boids(quad_tree.southWest, delta_time)
         update_boids(quad_tree.southEast, delta_time)
     } 
     for i in 0..< len(quad_tree.points) {
-        close_boids := &[dynamic]^boid.Boid{}
-        qt.query_circle(quad_tree, quad_tree.points[i].position, 50, close_boids)
-        separation_force := boid.get_separation_force(close_boids^, quad_tree.points[i])
-        alignment_force := boid.get_aligment_force(close_boids^, quad_tree.points[i])
-        cohesion_force := boid.get_cohesion_force(close_boids^, quad_tree.points[i])
+        close_boids := [dynamic]^boid.Boid{}
+        
+        qt.query_circle(quad_tree, quad_tree.points[i].position, 50, &close_boids)
+        separation_force := boid.get_separation_force(&close_boids, quad_tree.points[i])
+        alignment_force := boid.get_aligment_force(&close_boids, quad_tree.points[i])
+        cohesion_force := boid.get_cohesion_force(&close_boids, quad_tree.points[i])
         
         quad_tree.points[i].acceleration = separation_force + alignment_force + cohesion_force
         quad_tree.points[i].velocity = quad_tree.points[i].velocity + quad_tree.points[i].acceleration

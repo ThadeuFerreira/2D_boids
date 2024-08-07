@@ -225,10 +225,9 @@ clear_quadtree :: proc(qt : ^Quadtree) {
     clear_quadtree(qt.northEast)
     clear_quadtree(qt.southWest)
     clear_quadtree(qt.southEast)
-    qt.divided = false
-    
     free(qt.northWest)
     free(qt.northEast)
     free(qt.southWest)
     free(qt.southEast)
+    qt.divided = false 
 }

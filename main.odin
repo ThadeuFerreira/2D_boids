@@ -2,6 +2,7 @@ package main
 
 import rl "vendor:raylib"
 import "core:math"
+import "core:mem"
 import "core:math/rand"
 import "core:fmt"
 import "core:strings"
@@ -26,10 +27,48 @@ main :: proc()
     // Initialization
     //--------------------------------------------------------------------------------------
 
+    track: mem.Tracking_Allocator
+    mem.tracking_allocator_init(&track, context.allocator)
+    context.allocator = mem.tracking_allocator(&track)
+
+    temp_track: mem.Tracking_Allocator
+    mem.tracking_allocator_init(&temp_track, context.temp_allocator)
+    context.temp_allocator = mem.tracking_allocator(&temp_track)
+
+    defer {
+        if len(temp_track.allocation_map) > 0 {
+            fmt.eprintf("=== %v allocations not freed: ===\n", len(temp_track.allocation_map))
+            for _, entry in temp_track.allocation_map {
+                fmt.eprintf("- %v bytes @ %v\n", entry.size, entry.location)
+            }
+        }
+        if len(temp_track.bad_free_array) > 0 {
+            fmt.eprintf("=== %v incorrect frees: ===\n", len(temp_track.bad_free_array))
+            for entry in temp_track.bad_free_array {
+                fmt.eprintf("- %p @ %v\n", entry.memory, entry.location)
+            }
+        }
+        mem.tracking_allocator_destroy(&temp_track)
+
+        if len(track.allocation_map) > 0 {
+            fmt.eprintf("=== %v allocations not freed: ===\n", len(track.allocation_map))
+            for _, entry in track.allocation_map {
+                fmt.eprintf("- %v bytes @ %v\n", entry.size, entry.location)
+            }
+        }
+        if len(track.bad_free_array) > 0 {
+            fmt.eprintf("=== %v incorrect frees: ===\n", len(track.bad_free_array))
+            for entry in track.bad_free_array {
+                fmt.eprintf("- %p @ %v\n", entry.memory, entry.location)
+            }
+        }
+        mem.tracking_allocator_destroy(&track)
+    }
+
     rl.SetConfigFlags(rl.ConfigFlags{rl.ConfigFlag.WINDOW_TRANSPARENT});
 
     rl.InitWindow(screen_width, screen_height, "Boids - basic window");
-    rl.HideCursor()
+    // rl.HideCursor()
     toggle := false
         
     quad_tree := qt.Make_quadtree(rl.Rectangle{0, 0, f32(screen_width), f32(screen_height)}, 10, 0)
@@ -46,7 +85,7 @@ main :: proc()
         
         mouse_pos := rl.GetMousePosition()
         if rl.IsMouseButtonPressed(rl.MouseButton.LEFT) {
-            for i in 0..<100 {
+            for i in 0..<5 {
                 mouse_pos.x += rand.float32()*10 - 5
                 mouse_pos.y += rand.float32()*10 - 5
                 b := boid.Make_boid(mouse_pos, 0.1, 2, f32(screen_width), f32(screen_height), rl.WHITE)
@@ -55,7 +94,7 @@ main :: proc()
         }
 
         st_mouse_pos :=  fmt.tprintf( "%v, %v", mouse_pos.x ,mouse_pos.y)
-        rl.DrawText(strings.clone_to_cstring(st_mouse_pos), i32(mouse_pos.x), i32(mouse_pos.y), 20, rl.WHITE)
+        //rl.DrawText(strings.clone_to_cstring(st_mouse_pos), i32(mouse_pos.x), i32(mouse_pos.y), 20, rl.WHITE)
 
         average_speed : f32= 0
 
@@ -66,20 +105,24 @@ main :: proc()
         }
 
         Draw(quad_tree, toggle)           
-        rl.DrawText(strings.clone_to_cstring(fmt.tprintf("Average speed: %v", average_speed)), 10, 10, 20, rl.RED)
+        //rl.DrawText(strings.clone_to_cstring(fmt.tprintf("Average speed: %v", average_speed)), 10, 10, 20, rl.RED)
         fps := rl.GetFPS()
-        rl.DrawText(strings.clone_to_cstring(fmt.tprintf("FPS: %v", fps)), 10, 30, 20, rl.RED)
-        boids := &[dynamic]^boid.Boid{}
-        qt.Get_all_boids(quad_tree, boids)
+        //rl.DrawText(strings.clone_to_cstring(fmt.tprintf("FPS: %v", fps)), 10, 30, 20, rl.RED)
+        boids := [dynamic]^boid.Boid{}
+        qt.Get_all_boids(quad_tree, &boids)
         qt.clear_quadtree(quad_tree)
         free(quad_tree)
         quad_tree = qt.Make_quadtree(rl.Rectangle{0, 0, f32(screen_width), f32(screen_height)}, 10, 0)
         for i in 0..<len(boids) {
             insert_boid_in_quadtree(quad_tree, boids[i])
         }
-        rl.DrawText(strings.clone_to_cstring(fmt.tprintf("Total Boids: %v", len(boids))), 10, 50, 20, rl.RED)
+        //rl.DrawText(strings.clone_to_cstring(fmt.tprintf("Total Boids: %v", len(boids))), 10, 50, 20, rl.RED)
         rl.EndDrawing()
+        free(&boids)
+        free_all(context.temp_allocator)
     }
+    qt.clear_quadtree(quad_tree)
+    free(quad_tree)
 
     rl.CloseWindow()
 }
