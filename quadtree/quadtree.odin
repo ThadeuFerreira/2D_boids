@@ -182,13 +182,13 @@ subdivide :: proc(qt : ^Quadtree) {
     rl.TraceLog(rl.TraceLogLevel.TRACE, "Subdivided quadtree at depth %d", qt.depth)
 }
 
-Draw :: proc(qt : ^Quadtree) {
+Draw :: proc(qt : ^Quadtree, toggle : bool = false) {
     if qt.divided {
         Draw(qt.northWest)
         Draw(qt.northEast)
         Draw(qt.southWest)
         Draw(qt.southEast)
-    } else {
+    } else if toggle {
         rl.DrawRectangleLinesEx(qt.bounds, 1, rl.WHITE)
     }
     for point in qt.points {
@@ -214,6 +214,10 @@ get_all_boids :: proc(qt : ^Quadtree, boids : ^[dynamic]^boid.Boid) {
 }
 
 clear_quadtree :: proc(qt : ^Quadtree) {
+    // for point in qt.points {
+    //     free(point)
+    // }
+    delete(qt.points)
     if !qt.divided {
         return
     }
@@ -222,7 +226,7 @@ clear_quadtree :: proc(qt : ^Quadtree) {
     clear_quadtree(qt.southWest)
     clear_quadtree(qt.southEast)
     qt.divided = false
-    delete(qt.points)
+    
     free(qt.northWest)
     free(qt.northEast)
     free(qt.southWest)

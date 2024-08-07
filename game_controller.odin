@@ -52,19 +52,19 @@ update_boids :: proc(quad_tree : ^qt.Quadtree, delta_time : f32)
     }
 }
 
-Draw :: proc(quad_tree : ^qt.Quadtree)
+Draw :: proc(quad_tree : ^qt.Quadtree, toggle : bool)
 {    
-    draw_quadtree(quad_tree)
+    draw_quadtree(quad_tree, toggle)
 }
 
 
-draw_quadtree :: proc(quad_tree : ^qt.Quadtree) {
+draw_quadtree :: proc(quad_tree : ^qt.Quadtree, toggle : bool) {
     if quad_tree.divided {
-        Draw(quad_tree.northWest)
-        Draw(quad_tree.northEast)
-        Draw(quad_tree.southWest)
-        Draw(quad_tree.southEast)
-    } else {
+        draw_quadtree(quad_tree.northWest, toggle)
+        draw_quadtree(quad_tree.northEast, toggle)
+        draw_quadtree(quad_tree.southWest, toggle)
+        draw_quadtree(quad_tree.southEast, toggle)
+    } else if toggle {
         rl.DrawRectangleLinesEx(quad_tree.bounds, 1, rl.WHITE)
     }
     draw_boids(quad_tree)  

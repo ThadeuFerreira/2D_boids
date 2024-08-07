@@ -30,8 +30,8 @@ main :: proc()
 
     rl.InitWindow(screen_width, screen_height, "Boids - basic window");
     rl.HideCursor()
+    toggle := false
         
-    //boids := make([dynamic]^boid.Boid, 0, 100) 
     quad_tree := qt.Make_quadtree(rl.Rectangle{0, 0, f32(screen_width), f32(screen_height)}, 10, 0)
     rl.SetTargetFPS(120) // Set our game to run at 60 frames-per-second
     //--------------------------------------------------------------------------------------
@@ -60,24 +60,18 @@ main :: proc()
         average_speed : f32= 0
 
         Update(quad_tree)
-
         
-        // for i in 0..<len(boids) {
-        //     velocity := boids[i].velocity
-        //     speed := rl.Vector2Length(velocity)  
-        //     if math.is_nan_f32(speed) {
-        //         speed = 0
-        //     }
-        //     average_speed += speed
-        // }
-        // average_speed /= f32(len(boids))
+        if rl.IsKeyPressed(rl.KeyboardKey.SPACE) {
+            toggle = !toggle
+        }
 
-        Draw(quad_tree)           
+        Draw(quad_tree, toggle)           
         rl.DrawText(strings.clone_to_cstring(fmt.tprintf("Average speed: %v", average_speed)), 10, 10, 20, rl.RED)
         fps := rl.GetFPS()
         rl.DrawText(strings.clone_to_cstring(fmt.tprintf("FPS: %v", fps)), 10, 30, 20, rl.RED)
         boids := &[dynamic]^boid.Boid{}
         qt.Get_all_boids(quad_tree, boids)
+        qt.clear_quadtree(quad_tree)
         free(quad_tree)
         quad_tree = qt.Make_quadtree(rl.Rectangle{0, 0, f32(screen_width), f32(screen_height)}, 10, 0)
         for i in 0..<len(boids) {
