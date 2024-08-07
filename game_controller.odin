@@ -26,29 +26,29 @@ update_boids :: proc(quad_tree : ^qt.Quadtree, delta_time : f32)
         update_boids(quad_tree.southWest, delta_time)
         update_boids(quad_tree.southEast, delta_time)
     } 
-    for i in 0..< len(quad_tree.points) {
+    for i in 0..< len(quad_tree.entities) {
         close_boids := [dynamic]^boid.Boid{}
         
-        qt.query_circle(quad_tree, quad_tree.points[i].position, 50, &close_boids)
-        separation_force := boid.get_separation_force(&close_boids, quad_tree.points[i])
-        alignment_force := boid.get_aligment_force(&close_boids, quad_tree.points[i])
-        cohesion_force := boid.get_cohesion_force(&close_boids, quad_tree.points[i])
+        qt.query_circle(quad_tree, quad_tree.entities[i].position, 50, &close_boids)
+        separation_force := boid.get_separation_force(&close_boids, quad_tree.entities[i])
+        alignment_force := boid.get_aligment_force(&close_boids, quad_tree.entities[i])
+        cohesion_force := boid.get_cohesion_force(&close_boids, quad_tree.entities[i])
         
-        quad_tree.points[i].acceleration = separation_force + alignment_force + cohesion_force
-        quad_tree.points[i].velocity = quad_tree.points[i].velocity + quad_tree.points[i].acceleration
-        quad_tree.points[i].position = quad_tree.points[i].position + quad_tree.points[i].velocity * delta_time*speed
+        quad_tree.entities[i].acceleration = separation_force + alignment_force + cohesion_force
+        quad_tree.entities[i].velocity = quad_tree.entities[i].velocity + quad_tree.entities[i].acceleration
+        quad_tree.entities[i].position = quad_tree.entities[i].position + quad_tree.entities[i].velocity * delta_time*speed
 
-        if quad_tree.points[i].position.x > quad_tree.points[i].max_width {
-            quad_tree.points[i].position.x = 0
+        if quad_tree.entities[i].position.x > quad_tree.entities[i].max_width {
+            quad_tree.entities[i].position.x = 0
         }
-        if quad_tree.points[i].position.x < 0 {
-            quad_tree.points[i].position.x = quad_tree.points[i].max_width -1
+        if quad_tree.entities[i].position.x < 0 {
+            quad_tree.entities[i].position.x = quad_tree.entities[i].max_width -1
         }
-        if quad_tree.points[i].position.y > quad_tree.points[i].max_height {
-            quad_tree.points[i].position.y = 0
+        if quad_tree.entities[i].position.y > quad_tree.entities[i].max_height {
+            quad_tree.entities[i].position.y = 0
         }
-        if quad_tree.points[i].position.y < 0 {
-            quad_tree.points[i].position.y = quad_tree.points[i].max_height -1
+        if quad_tree.entities[i].position.y < 0 {
+            quad_tree.entities[i].position.y = quad_tree.entities[i].max_height -1
         }
     }
 }
@@ -72,7 +72,7 @@ draw_quadtree :: proc(quad_tree : ^qt.Quadtree, toggle : bool) {
 }
 
 draw_boids :: proc(quad_tree : ^qt.Quadtree) {
-    for point in quad_tree.points {
-        rl.DrawCircleV(point.position, 2, rl.WHITE)
+    for entity in quad_tree.entities {
+        rl.DrawCircleV(entity.position, 2, rl.WHITE)
     }
 }

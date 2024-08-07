@@ -9,7 +9,7 @@ MAX_DEPTH :: 5
 Quadtree :: struct {
     bounds : rl.Rectangle,
     capacity: int,
-    points: [dynamic]^boid.Boid,
+    entities: [dynamic]^boid.Boid,
     divided: bool,
     depth: int,
     total_points: int,
@@ -36,7 +36,7 @@ Make_quadtree :: proc(bounds: rl.Rectangle, capacity: int = DEFAULT_CAPACITY, de
     qt := new(Quadtree)
     qt.bounds = bounds
     qt.capacity = capacity
-    qt.points = make([dynamic]^boid.Boid, 0, capacity)
+    qt.entities = make([dynamic]^boid.Boid, 0, capacity)
     qt.divided = false
     qt.depth = depth
 
@@ -50,42 +50,42 @@ get_children :: proc(qt : ^Quadtree) -> [4]^Quadtree {
     return [4]^Quadtree{nil, nil, nil, nil}
 }
 
-insert :: proc(qt : ^Quadtree, point : ^boid.Boid) -> bool {
-    if !rl.CheckCollisionPointRec(point.position, qt.bounds) {
+insert :: proc(qt : ^Quadtree, entity : ^boid.Boid) -> bool {
+    if !rl.CheckCollisionPointRec(entity.position, qt.bounds) {
         return false
     }
 
     if !qt.divided{
-        if len(qt.points) < qt.capacity || qt.depth >= MAX_DEPTH {
-            append(&qt.points, point)
+        if len(qt.entities) < qt.capacity || qt.depth >= MAX_DEPTH {
+            append(&qt.entities, entity)
             return true
         }
         subdivide(qt)
     }
 
-    if insert(qt.northWest, point) || insert(qt.northEast, point) || insert(qt.southWest, point) || insert(qt.southEast, point){
+    if insert(qt.northWest, entity) || insert(qt.northEast, entity) || insert(qt.southWest, entity) || insert(qt.southEast, entity){
         qt.total_points += 1
         return true
     }
     return false
 }
 
-delete_point :: proc(qt : ^Quadtree, point : boid.Boid) -> bool {
-    if !rl.CheckCollisionPointRec(point.position, qt.bounds) {
+delete_point :: proc(qt : ^Quadtree, entity : boid.Boid) -> bool {
+    if !rl.CheckCollisionPointRec(entity.position, qt.bounds) {
         return false
     }
 
     if qt.divided {
-        if delete_point(qt.northWest, point) || delete_point(qt.northEast, point) || delete_point(qt.southWest, point) || delete_point(qt.southEast, point){
+        if delete_point(qt.northWest, entity) || delete_point(qt.northEast, entity) || delete_point(qt.southWest, entity) || delete_point(qt.southEast, entity){
             rebalance(qt)
             qt.total_points -= 1
             return true
         }
     }
 
-    for i in 0..< len(qt.points) {
-        if qt.points[i].position == point.position {
-            ordered_remove(&qt.points, i)
+    for i in 0..< len(qt.entities) {
+        if qt.entities[i].position == entity.position {
+            ordered_remove(&qt.entities, i)
             qt.total_points -= 1
             return true
         }
@@ -106,9 +106,9 @@ query :: proc(qt : ^Quadtree, range : rl.Rectangle, found : ^[dynamic]^boid.Boid
         return 
     } 
 
-    for point in qt.points {
-        if rl.CheckCollisionPointRec(point.position, range) {
-            append(found, point)
+    for entity in qt.entities {
+        if rl.CheckCollisionPointRec(entity.position, range) {
+            append(found, entity)
         }
     }
     return 
@@ -129,9 +129,9 @@ query_circle :: proc(qt : ^Quadtree, center : rl.Vector2, radius : f32, found : 
         return 
     }
 
-    for point in qt.points {
-        if rl.CheckCollisionPointCircle(point.position, center, radius) {
-            append(found, point)
+    for entity in qt.entities {
+        if rl.CheckCollisionPointCircle(entity.position, center, radius) {
+            append(found, entity)
         }
     }
 }
@@ -144,12 +144,12 @@ rebalance :: proc(qt : ^Quadtree) {
             children_points += child.total_points
         }
     }
-    if len(qt.points) + children_points <= qt.capacity {
+    if len(qt.entities) + children_points <= qt.capacity {
         qt.divided = false
         for child in children {
             if child != nil {
-                for point in child.points {
-                    insert(qt, point)
+                for entity in child.entities {
+                    insert(qt, entity)
                 }
                 clear_quadtree(child)
             }
@@ -171,14 +171,14 @@ subdivide :: proc(qt : ^Quadtree) {
 
     inserted := false
 
-    for point in qt.points {
-        inserted = insert(qt.northEast, point) || insert(qt.northWest, point) || insert(qt.southEast, point) || insert(qt.southWest, point)
+    for entity in qt.entities {
+        inserted = insert(qt.northEast, entity) || insert(qt.northWest, entity) || insert(qt.southEast, entity) || insert(qt.southWest, entity)
         if !inserted {
-            rl.TraceLog(rl.TraceLogLevel.TRACE, "Failed to insert point into children")
+            rl.TraceLog(rl.TraceLogLevel.TRACE, "Failed to insert entity into children")
         }
     }
-    delete(qt.points)
-    qt.points = nil
+    delete(qt.entities)
+    qt.entities = nil
     rl.TraceLog(rl.TraceLogLevel.TRACE, "Subdivided quadtree at depth %d", qt.depth)
 }
 
@@ -191,8 +191,8 @@ Draw :: proc(qt : ^Quadtree, toggle : bool = false) {
     } else if toggle {
         rl.DrawRectangleLinesEx(qt.bounds, 1, rl.WHITE)
     }
-    for point in qt.points {
-        rl.DrawCircleV(point.position, 2, rl.WHITE)
+    for entity in qt.entities {
+        rl.DrawCircleV(entity.position, 2, rl.WHITE)
     }
 }
 
@@ -207,17 +207,17 @@ get_all_boids :: proc(qt : ^Quadtree, boids : ^[dynamic]^boid.Boid) {
         get_all_boids(qt.southWest, boids)
         get_all_boids(qt.southEast, boids)
     } else {
-        for point in qt.points {
-            append(boids, point)
+        for entity in qt.entities {
+            append(boids, entity)
         }
     }
 }
 
 clear_quadtree :: proc(qt : ^Quadtree) {
-    // for point in qt.points {
-    //     free(point)
+    // for entity in qt.entities {
+    //     free(entity)
     // }
-    delete(qt.points)
+    delete(qt.entities)
     if !qt.divided {
         return
     }
