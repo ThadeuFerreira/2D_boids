@@ -114,7 +114,13 @@ query :: proc(qt : ^Quadtree, range : rl.Rectangle, found : ^[dynamic]^boid.Boid
     return 
 }
 
-query_circle :: proc(qt : ^Quadtree, center : rl.Vector2, radius : f32, found : ^[dynamic]^boid.Boid) {
+query_circle :: proc(qt: ^Quadtree, center: rl.Vector2, radius: f32) -> [dynamic]^boid.Boid {
+    found := [dynamic]^boid.Boid{}
+    query_circle_impl(qt, center, radius, &found)
+    return found
+}
+
+query_circle_impl :: proc(qt : ^Quadtree, center : rl.Vector2, radius : f32, found : ^[dynamic]^boid.Boid) {
     //CheckCollisionCircleRec(Vector2 center, float radius, Rectangle rec);                         // Check collision between circle and rectangle
 
     if !rl.CheckCollisionCircleRec(center, radius, qt.bounds) {
@@ -122,10 +128,10 @@ query_circle :: proc(qt : ^Quadtree, center : rl.Vector2, radius : f32, found : 
     }
 
     if qt.divided {
-        query_circle(qt.northWest, center, radius, found)
-        query_circle(qt.northEast, center, radius, found)
-        query_circle(qt.southWest, center, radius, found)
-        query_circle(qt.southEast, center, radius, found)
+        query_circle_impl(qt.northWest, center, radius, found)
+        query_circle_impl(qt.northEast, center, radius, found)
+        query_circle_impl(qt.southWest, center, radius, found)
+        query_circle_impl(qt.southEast, center, radius, found)
         return 
     }
 
@@ -196,8 +202,10 @@ Draw :: proc(qt : ^Quadtree, toggle : bool = false) {
     }
 }
 
-Get_all_boids :: proc(qt : ^Quadtree, boids : ^[dynamic]^boid.Boid ) {
-    get_all_boids(qt, boids)
+Get_all_boids :: proc(qt : ^Quadtree) -> [dynamic]^boid.Boid {
+    boids := [dynamic]^boid.Boid{}
+    get_all_boids(qt, &boids)
+    return boids
 }
 
 get_all_boids :: proc(qt : ^Quadtree, boids : ^[dynamic]^boid.Boid) {

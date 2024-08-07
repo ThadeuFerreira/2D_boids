@@ -85,7 +85,7 @@ main :: proc()
         
         mouse_pos := rl.GetMousePosition()
         if rl.IsMouseButtonPressed(rl.MouseButton.LEFT) {
-            for i in 0..<5 {
+            for i in 0..<100 {
                 mouse_pos.x += rand.float32()*10 - 5
                 mouse_pos.y += rand.float32()*10 - 5
                 b := boid.Make_boid(mouse_pos, 0.1, 2, f32(screen_width), f32(screen_height), rl.WHITE)
@@ -105,20 +105,20 @@ main :: proc()
         }
 
         Draw(quad_tree, toggle)           
-        //rl.DrawText(strings.clone_to_cstring(fmt.tprintf("Average speed: %v", average_speed)), 10, 10, 20, rl.RED)
+        rl.DrawText(strings.clone_to_cstring(fmt.tprintf("Average speed: %v", average_speed)), 10, 10, 20, rl.RED)
         fps := rl.GetFPS()
-        //rl.DrawText(strings.clone_to_cstring(fmt.tprintf("FPS: %v", fps)), 10, 30, 20, rl.RED)
-        boids := [dynamic]^boid.Boid{}
-        qt.Get_all_boids(quad_tree, &boids)
+        rl.DrawText(strings.clone_to_cstring(fmt.tprintf("FPS: %v", fps)), 10, 30, 20, rl.RED)
+        boids := qt.Get_all_boids(quad_tree)
+        
         qt.clear_quadtree(quad_tree)
         free(quad_tree)
         quad_tree = qt.Make_quadtree(rl.Rectangle{0, 0, f32(screen_width), f32(screen_height)}, 10, 0)
         for i in 0..<len(boids) {
             insert_boid_in_quadtree(quad_tree, boids[i])
         }
-        //rl.DrawText(strings.clone_to_cstring(fmt.tprintf("Total Boids: %v", len(boids))), 10, 50, 20, rl.RED)
+        rl.DrawText(strings.clone_to_cstring(fmt.tprintf("Total Boids: %v", len(boids))), 10, 50, 20, rl.RED)
         rl.EndDrawing()
-        free(&boids)
+        delete(boids)
         free_all(context.temp_allocator)
     }
     qt.clear_quadtree(quad_tree)

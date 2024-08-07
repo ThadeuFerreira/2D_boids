@@ -27,9 +27,8 @@ update_boids :: proc(quad_tree : ^qt.Quadtree, delta_time : f32)
         update_boids(quad_tree.southEast, delta_time)
     } 
     for i in 0..< len(quad_tree.entities) {
-        close_boids := [dynamic]^boid.Boid{}
+        close_boids := qt.query_circle(quad_tree, quad_tree.entities[i].position, 50)
         
-        qt.query_circle(quad_tree, quad_tree.entities[i].position, 50, &close_boids)
         separation_force := boid.get_separation_force(&close_boids, quad_tree.entities[i])
         alignment_force := boid.get_aligment_force(&close_boids, quad_tree.entities[i])
         cohesion_force := boid.get_cohesion_force(&close_boids, quad_tree.entities[i])
@@ -50,6 +49,7 @@ update_boids :: proc(quad_tree : ^qt.Quadtree, delta_time : f32)
         if quad_tree.entities[i].position.y < 0 {
             quad_tree.entities[i].position.y = quad_tree.entities[i].max_height -1
         }
+        delete(close_boids)
     }
 }
 
