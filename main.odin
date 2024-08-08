@@ -93,8 +93,8 @@ main :: proc()
             }
         }
 
-        st_mouse_pos :=  fmt.tprintf( "%v, %v", mouse_pos.x ,mouse_pos.y)
-        rl.DrawText(strings.clone_to_cstring(st_mouse_pos), i32(mouse_pos.x), i32(mouse_pos.y), 20, rl.WHITE)
+        st_mouse_pos :=  rl.TextFormat( "%v, %v", mouse_pos.x ,mouse_pos.y)
+        rl.DrawText(st_mouse_pos, i32(mouse_pos.x), i32(mouse_pos.y), 20, rl.WHITE)
 
         Update(quad_tree)
         
@@ -119,6 +119,19 @@ main :: proc()
         delete(boids)
         free_all(context.temp_allocator)
     }
+    delete_boids :: proc(qt : ^qt.Quadtree) {
+        if qt.divided {
+            delete_boids(qt.northWest)
+            delete_boids(qt.northEast)
+            delete_boids(qt.southWest)
+            delete_boids(qt.southEast)
+        } else {
+            for i in 0..<len(qt.entities) {
+                free(qt.entities[i])
+            }
+        }
+    }
+    delete_boids(quad_tree)
     qt.clear_quadtree(quad_tree)
     free(quad_tree)
 
