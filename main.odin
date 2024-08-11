@@ -70,7 +70,7 @@ main :: proc()
     rl.InitWindow(screen_width, screen_height, "Boids - basic window");
     rl.HideCursor()
     toggle := false
-        
+    query_distance : f32 = 100
     quad_tree := qt.Make_quadtree(rl.Rectangle{0, 0, f32(screen_width), f32(screen_height)}, 10, 0)
     rl.SetTargetFPS(120) // Set our game to run at 60 frames-per-second
     //--------------------------------------------------------------------------------------
@@ -82,6 +82,9 @@ main :: proc()
         //----------------------------------------------------------------------------------
         rl.BeginDrawing()
         rl.ClearBackground(rl.BLACK)
+        if rl.IsKeyPressed(rl.KeyboardKey.SPACE) {
+            toggle = !toggle
+        }
         
         mouse_pos := rl.GetMousePosition()
         if rl.IsMouseButtonPressed(rl.MouseButton.LEFT) {
@@ -95,12 +98,14 @@ main :: proc()
 
         st_mouse_pos :=  rl.TextFormat( "%v, %v", mouse_pos.x ,mouse_pos.y)
         rl.DrawText(st_mouse_pos, i32(mouse_pos.x), i32(mouse_pos.y), 20, rl.WHITE)
-
-        Update(quad_tree)
         
-        if rl.IsKeyPressed(rl.KeyboardKey.SPACE) {
-            toggle = !toggle
-        }
+       
+        query_distance += rl.GetMouseWheelMove()*10
+        query_distance = math.clamp(query_distance, 0, 1000)
+        
+        Update(quad_tree, mouse_pos, query_distance, toggle)
+        rl.DrawCircleLines(i32(mouse_pos.x), i32(mouse_pos.y), query_distance, rl.YELLOW)
+        
 
         Draw(quad_tree, toggle)           
         

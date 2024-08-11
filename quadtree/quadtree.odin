@@ -185,7 +185,7 @@ subdivide :: proc(qt : ^Quadtree) {
     }
     delete(qt.entities)
     qt.entities = nil
-    rl.TraceLog(rl.TraceLogLevel.TRACE, "Subdivided quadtree at depth %d", qt.depth)
+    //rl.TraceLog(rl.TraceLogLevel.TRACE, "Subdivided quadtree at depth %d", qt.depth)
 }
 
 Draw :: proc(qt : ^Quadtree, toggle : bool = false) {
