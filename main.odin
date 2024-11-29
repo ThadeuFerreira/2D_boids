@@ -79,18 +79,29 @@ main :: proc()
     // static bool resizing2 = false;
     // static Vector2 scroll2;
 
-    window_position := rl.Vector2 { 10, 10 }
-    window_size := rl.Vector2 { 200, 400 }
-    minimized := false
-    moving := false
-    resizing := false
+    menu_window_position := rl.Vector2 { 10, 10 }
+    menu_window_size := rl.Vector2 { 500, 400 }
+    menu_minimized := false
+    menu_moving := false
+    menu_resizing := false
     scroll := rl.Vector2 { 0, 0 }
 
+    floating_window := Floating_Window {
+        position = rl.Vector2 { 250, 10 },
+        size = rl.Vector2 { 200, 400 },
+        minimized = false,
+        moving = false,
+        resizing = false,
+        draw_content = DrawContent,
+        content_size = rl.Vector2 { 300, 500 },
+        scroll = rl.Vector2 { 0, 0 },
+        title = "Movable & Scalable Window",
+    }
 
     rl.SetConfigFlags(rl.ConfigFlags{rl.ConfigFlag.WINDOW_TRANSPARENT});
 
     rl.InitWindow(screen_width, screen_height, "Boids - basic window");
-    rl.HideCursor()
+
     toggle := false
     query_distance : f32 = 100
     quad_tree := qt.Make_quadtree(rl.Rectangle{0, 0, f32(screen_width), f32(screen_height)}, 10, 0)
@@ -161,7 +172,7 @@ main :: proc()
             insert_boid_in_quadtree(quad_tree, boids[i])
         }
         rl.DrawText(rl.TextFormat("Total Boids: %v", len(boids)), 10, 50, 20, rl.RED)
-        GuiWindowFloating(&window_position, &window_size, &minimized, &moving, &resizing, DrawContent, rl.Vector2{ 140, 320 }, &scroll, "Movable & Scalable Window");
+        GuiWindowFloating(&floating_window);
         rl.EndDrawing()
         delete(boids)
         free_all(context.temp_allocator)
